@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">ToDo</string>
+    <string name="tv_title">タスクリスト</string>
+    <string name="tv_regist_title">タスク情報登録</string>
+    <string name="tv_edit_title">タスク情報編集</string>
+    <string name="tv_task_name">タスク名:</string>
+    <string name="tv_deadline_complete">完了タスク</string>
+    <string name="tv_deadline">期限:</string>
+    <string name="tv_detail">詳細:</string>
+    <string name="menu_add">add</string>
+    <string name="msg_name">タスク名を入力してください。</string>
+    <string name="menu_save">save</string>
+    <string name="menu_delete">delete</string>
+</resources>
