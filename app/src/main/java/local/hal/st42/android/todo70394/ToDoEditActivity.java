@@ -154,7 +154,19 @@ public class ToDoEditActivity extends AppCompatActivity {
         int nowYear = cal.get(Calendar.YEAR);
         int nowMonth = cal.get(Calendar.MONTH);
         int nowDayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
-
+        if(_mode != MainActivity.MODE_INSERT) {
+            TextView tvDeadlineDay = findViewById(R.id.deadlineDay);
+            String _deadlineDay = tvDeadlineDay.getText().toString();
+            String[] strYear = _deadlineDay.split("年",0);
+            String[] strMonth = strYear[1].split("月",0);
+            String[] strDayOfMonth = strMonth[1].split("日",0);
+            System.out.println(strYear[0]);
+            System.out.println(strMonth[0]);
+            System.out.println(strDayOfMonth[0]);
+            nowYear = Integer.parseInt(strYear[0]);
+            nowMonth = Integer.parseInt(strMonth[0]);
+            nowDayOfMonth = Integer.parseInt(strDayOfMonth[0]);
+        }
         DatePickerDialog dialog = new DatePickerDialog(ToDoEditActivity.this, new DatePickerDialogOnDateSetListener(), nowYear, nowMonth, nowDayOfMonth);
         dialog.show();
     }
