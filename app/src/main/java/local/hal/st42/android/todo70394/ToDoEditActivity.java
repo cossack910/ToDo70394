@@ -42,8 +42,15 @@ public class ToDoEditActivity extends AppCompatActivity {
      * データベースヘルパーオブジェクト
      */
     private DatabaseHelper _helper;
-
+    /*
+     *タスク完了期限変数
+     */
     private String deadline;
+    /**
+     *タスクの完了状態表示を示すフィールド
+     */
+    private int _task_flg;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +63,8 @@ public class ToDoEditActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         _mode = intent.getIntExtra("mode", MainActivity.MODE_INSERT);
+        //
+        _task_flg = intent.getIntExtra("taskFlg", 0);
 
         if(_mode == MainActivity.MODE_INSERT){
             deadline = getToday();
@@ -102,12 +111,18 @@ public class ToDoEditActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
+            //
+            Intent intent = getIntent();
+            intent.putExtra("taskFlg", _task_flg);
+            setResult(RESULT_OK, intent);
             finish();//Activityを閉じる
         }
         return super.onOptionsItemSelected(item);
     }
     /**
      * MenuSaveアイコンのボタンが押された時のメソッド
+     * 変数doneは完了済の場合は１、未完了の場合は０
+     *
      * @param item
      */
     public void onSaveButtonClick(MenuItem item){
@@ -133,6 +148,11 @@ public class ToDoEditActivity extends AppCompatActivity {
                 }
                 DataAccess.update(db, _idNo, taskName, deadline, done, taskDetail);
             }
+            //
+            Intent intent = getIntent();
+            intent.putExtra("taskFlg", _task_flg);
+            setResult(RESULT_OK, intent);
+            //5/20
             finish();
         }
     }
@@ -192,6 +212,9 @@ public class ToDoEditActivity extends AppCompatActivity {
     public void  listDelete(){
         SQLiteDatabase db = _helper.getWritableDatabase();
         DataAccess.delete(db, _idNo);
+        Intent intent = getIntent();
+        intent.putExtra("taskFlg", _task_flg);
+        setResult(RESULT_OK, intent);
         finish();
     }
 

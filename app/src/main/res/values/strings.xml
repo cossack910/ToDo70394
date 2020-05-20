@@ -11,4 +11,8 @@
     <string name="msg_name">タスク名を入力してください。</string>
     <string name="menu_save">save</string>
     <string name="menu_delete">delete</string>
+    <string name="menu_task_status">タスク状態：</string>
+    <string name="menu_task_all">全タスク</string>
+    <string name="menu_task_incomplete">未完了タスク</string>
+    <string name="menu_task_complete">完了タスク</string>
 </resources>

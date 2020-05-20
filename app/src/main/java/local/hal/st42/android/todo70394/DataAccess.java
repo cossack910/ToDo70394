@@ -14,6 +14,23 @@ public class DataAccess {
         return cursor;
     }
     /**
+     * 未完了タスク検索メソッド
+     */
+    public static Cursor findIncomplete(SQLiteDatabase db){
+        String sql = "SELECT _id, name, deadline, done, note FROM tasks WHERE done = 0";
+        Cursor cursor = db.rawQuery(sql, null);
+        return cursor;
+    }
+    /**
+     * 完了タスク検索メソッド
+     */
+    public static Cursor findComplete(SQLiteDatabase db){
+        String sql = "SELECT _id, name, deadline, done, note FROM tasks WHERE done = 1";
+        Cursor cursor = db.rawQuery(sql, null);
+        return cursor;
+    }
+
+    /**
      * 主キーによる検索
      */
     public static Task findByPK(SQLiteDatabase db, long id){
