@@ -6,12 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.DatePickerDialog;
 import android.app.FragmentManager;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import android.app.TimePickerDialog;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.content.Intent;
@@ -22,7 +19,6 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -46,10 +42,6 @@ public class ToDoEditActivity extends AppCompatActivity {
      *タスク完了期限変数
      */
     private String deadline;
-    /**
-     *タスクの完了状態表示を示すフィールド
-     */
-    private int _task_flg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +55,6 @@ public class ToDoEditActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         _mode = intent.getIntExtra("mode", MainActivity.MODE_INSERT);
-        //
-        _task_flg = intent.getIntExtra("taskFlg", 0);
 
         if(_mode == MainActivity.MODE_INSERT){
             deadline = getToday();
@@ -83,8 +73,10 @@ public class ToDoEditActivity extends AppCompatActivity {
             EditText edTaskName = findViewById(R.id.edTaskName);
             edTaskName.setText(taskData.getName());
 
+            String[] array_DeadlineDay =taskData.getDeadline().split("-| ");
+            String strDeadlineDay = array_DeadlineDay[0] + "年" + array_DeadlineDay[1] + "月" + array_DeadlineDay[2] + "日";
             TextView tvDeadlineDay = findViewById(R.id.deadlineDay);
-            tvDeadlineDay.setText(taskData.getDeadline());
+            tvDeadlineDay.setText(strDeadlineDay);
 
             Switch taskComplete = findViewById(R.id.taskComplete);
             if(taskData.getDone() == 1){
@@ -111,10 +103,6 @@ public class ToDoEditActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            //
-            Intent intent = getIntent();
-            intent.putExtra("taskFlg", _task_flg);
-            setResult(RESULT_OK, intent);
             finish();//Activityを閉じる
         }
         return super.onOptionsItemSelected(item);
@@ -135,12 +123,20 @@ public class ToDoEditActivity extends AppCompatActivity {
             String taskDetail = edTaskDetail.getText().toString();
             SQLiteDatabase db = _helper.getWritableDatabase();
             if(_mode == MainActivity.MODE_INSERT){
+                TextView deadlineDay = findViewById(R.id.deadlineDay);
+                String strDeadline = deadlineDay.getText().toString();
+                String[] deadlineParts = strDeadline.split("年|月|日");
+                deadline = deadlineParts[0] + "-" + deadlineParts[1] + "-" + deadlineParts[2] + " " + "00:00:00";
+                System.out.println(deadline);
                 DataAccess.insert(db, taskName, deadline, taskDetail);
             }else{
                 long done;
                 Switch taskComplete = findViewById(R.id.taskComplete);
                 TextView deadlineDay = findViewById(R.id.deadlineDay);
-                deadline = deadlineDay.getText().toString();
+                String strDeadline = deadlineDay.getText().toString();
+                String[] deadlineParts = strDeadline.split("年|月|日");
+                deadline = deadlineParts[0] + "-" + deadlineParts[1] + "-" + deadlineParts[2] + " " + "00:00:00";
+                System.out.println(deadline);
                 if(taskComplete.isChecked()){
                     done = 1;
                 }else{
@@ -148,11 +144,6 @@ public class ToDoEditActivity extends AppCompatActivity {
                 }
                 DataAccess.update(db, _idNo, taskName, deadline, done, taskDetail);
             }
-            //
-            Intent intent = getIntent();
-            intent.putExtra("taskFlg", _task_flg);
-            setResult(RESULT_OK, intent);
-            //5/20
             finish();
         }
     }
@@ -170,19 +161,12 @@ public class ToDoEditActivity extends AppCompatActivity {
      *期限の表示をタッチした時のイベント処理メソッド
      */
     public void showDatePickerDialog(View view){
-        Calendar cal = Calendar.getInstance();
-        int nowYear = cal.get(Calendar.YEAR);
-        int nowMonth = cal.get(Calendar.MONTH);
-        int nowDayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
-
         TextView tvDeadlineDay = findViewById(R.id.deadlineDay);
         String _deadlineDay = tvDeadlineDay.getText().toString();
-        String[] strYear = _deadlineDay.split("年",0);
-        String[] strMonth = strYear[1].split("月",0);
-        String[] strDayOfMonth = strMonth[1].split("日",0);
-        nowYear = Integer.parseInt(strYear[0]);
-        nowMonth = Integer.parseInt(strMonth[0]) - 1;
-        nowDayOfMonth = Integer.parseInt(strDayOfMonth[0]);
+        String[] deadlineParts = _deadlineDay.split("年|月|日");
+        int nowYear = Integer.parseInt(deadlineParts[0]);
+        int nowMonth = Integer.parseInt(deadlineParts[1]) - 1;
+        int nowDayOfMonth = Integer.parseInt(deadlineParts[2]);
         DatePickerDialog dialog = new DatePickerDialog(ToDoEditActivity.this, new DatePickerDialogOnDateSetListener(), nowYear, nowMonth, nowDayOfMonth);
         dialog.show();
     }
@@ -212,9 +196,6 @@ public class ToDoEditActivity extends AppCompatActivity {
     public void  listDelete(){
         SQLiteDatabase db = _helper.getWritableDatabase();
         DataAccess.delete(db, _idNo);
-        Intent intent = getIntent();
-        intent.putExtra("taskFlg", _task_flg);
-        setResult(RESULT_OK, intent);
         finish();
     }
 
@@ -223,7 +204,7 @@ public class ToDoEditActivity extends AppCompatActivity {
      */
     private String getToday() {
         Date date = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月dd日");
         return sdf.format(date);
     }
 }
