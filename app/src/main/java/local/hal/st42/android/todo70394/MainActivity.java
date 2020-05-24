@@ -79,7 +79,10 @@ public class MainActivity extends AppCompatActivity {
         SimpleAdapter adapter = new SimpleAdapter(this, TaskList,android.R.layout.simple_list_item_2, from, to);
         _lvTaskList.setAdapter(adapter);
     }
-
+    /*
+     *タスクリストを生成するメソッド
+     * @return タスクリスト
+     */
     private ArrayList<HashMap<String, String>> createTaskList(Cursor cursor){
         int indexId  = cursor.getColumnIndex( "_id");
         int indexName = cursor.getColumnIndex( "name" );
