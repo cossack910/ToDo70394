@@ -87,20 +87,27 @@ public class MainActivity extends AppCompatActivity {
         int indexId  = cursor.getColumnIndex( "_id");
         int indexName = cursor.getColumnIndex( "name" );
         int indexDeadline  = cursor.getColumnIndex( "deadline");
+        int indexDone  = cursor.getColumnIndex( "done");
         String strId;
         String strName;
         String strDeadline;
+        int intDone;
         ArrayList<HashMap<String, String>> TaskList = new ArrayList<>();
         while(cursor.moveToNext()){
             HashMap<String,String> data = new HashMap<>();
             strId = cursor.getString(indexId);
             strName = cursor.getString(indexName);
             strDeadline = cursor.getString(indexDeadline);
-            strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月").replace(" 00:00:00","日");
-            System.out.println(strName);
-            System.out.println(strDeadline);
+            //strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月").replace(" 00:00:00","日");
+            strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月") + "日";
+            intDone = cursor.getInt(indexDone);
             data.put("_id",strId);
-            data.put("name",strName);
+            if(intDone == 1){
+                data.put("name",strName + "  (完了済のタスク)");
+            }else {
+                data.put("name",strName);
+            }
+
             data.put("deadline",strDeadline);
             TaskList.add(data);
         }
@@ -185,5 +192,4 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
 }

@@ -126,7 +126,8 @@ public class ToDoEditActivity extends AppCompatActivity {
                 TextView deadlineDay = findViewById(R.id.deadlineDay);
                 String strDeadline = deadlineDay.getText().toString();
                 String[] deadlineParts = strDeadline.split("年|月|日");
-                deadline = deadlineParts[0] + "-" + deadlineParts[1] + "-" + deadlineParts[2] + " " + "00:00:00";
+                //deadline = deadlineParts[0] + "-" + deadlineParts[1] + "-" + deadlineParts[2] + " " + "00:00:00";
+                deadline = deadlineParts[0] + "-" + deadlineParts[1] + "-" + deadlineParts[2];
                 System.out.println(deadline);
                 DataAccess.insert(db, taskName, deadline, taskDetail);
             }else{
@@ -135,7 +136,8 @@ public class ToDoEditActivity extends AppCompatActivity {
                 TextView deadlineDay = findViewById(R.id.deadlineDay);
                 String strDeadline = deadlineDay.getText().toString();
                 String[] deadlineParts = strDeadline.split("年|月|日");
-                deadline = deadlineParts[0] + "-" + deadlineParts[1] + "-" + deadlineParts[2] + " " + "00:00:00";
+                //deadline = deadlineParts[0] + "-" + deadlineParts[1] + "-" + deadlineParts[2] + " " + "00:00:00";
+                deadline = deadlineParts[0] + "-" + deadlineParts[1] + "-" + deadlineParts[2];
                 System.out.println(deadline);
                 if(taskComplete.isChecked()){
                     done = 1;
@@ -177,7 +179,19 @@ public class ToDoEditActivity extends AppCompatActivity {
     private class DatePickerDialogOnDateSetListener implements DatePickerDialog.OnDateSetListener{
         @Override
         public void onDateSet(DatePicker view, int year, int month, int dayOfMonth){
-            deadline = year + "年" + (month + 1) + "月" + dayOfMonth + "日";
+            String strMonth;
+            String strDayOfMonth;
+            if(month < 10){
+                strMonth = "0"+ String.valueOf(month + 1);
+            }else{
+                strMonth = String.valueOf(month + 1);
+            }
+            if(dayOfMonth < 10){
+                strDayOfMonth = "0"+ String.valueOf(dayOfMonth);
+            }else{
+                strDayOfMonth = String.valueOf(dayOfMonth);
+            }
+            deadline = year + "年" + strMonth + "月" + strDayOfMonth + "日";
             TextView deadlineDay = findViewById(R.id.deadlineDay);
             deadlineDay.setText(deadline);
         }
@@ -204,7 +218,7 @@ public class ToDoEditActivity extends AppCompatActivity {
      */
     private String getToday() {
         Date date = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月dd日");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日");
         return sdf.format(date);
     }
 }
