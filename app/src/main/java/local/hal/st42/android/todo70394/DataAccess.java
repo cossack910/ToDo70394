@@ -9,7 +9,8 @@ public class DataAccess {
      * 全データ検索メソッド
      */
     public static Cursor findAll(SQLiteDatabase db){
-        String sql = "SELECT _id, name, deadline, done, note FROM tasks ORDER BY done, deadline";
+        //String sql = "SELECT _id, name, deadline, done, note FROM tasks ORDER BY _id DESC";
+        String sql = "SELECT _id, name, deadline, done, note FROM (SELECT * FROM tasks WHERE done = 0 ORDER BY deadline) UNION ALL SELECT * FROM (SELECT * FROM  tasks WHERE done = 1 ORDER BY deadline DESC)";
         Cursor cursor = db.rawQuery(sql, null);
         return cursor;
     }
@@ -25,7 +26,7 @@ public class DataAccess {
      * 完了タスク検索メソッド
      */
     public static Cursor findComplete(SQLiteDatabase db){
-        String sql = "SELECT _id, name, deadline, done, note FROM tasks WHERE done = 1 ORDER BY deadline";
+        String sql = "SELECT _id, name, deadline, done, note FROM tasks WHERE done = 1 ORDER BY deadline DESC";
         Cursor cursor = db.rawQuery(sql, null);
         return cursor;
     }
