@@ -57,20 +57,16 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         SQLiteDatabase db = _helper.getWritableDatabase();
         ArrayList<HashMap<String, String>> TaskList = new ArrayList<>();
-        //Cursor cursor = DataAccess.findAll(db);
         TaskList = createTaskList(DataAccess.findAll(db));
         TextView _tvTaskStatus = findViewById(R.id.tvTaskStatus);
 
         if(_task_flg == 2){
-            //cursor = DataAccess.findAll(db);
             TaskList = createTaskList(DataAccess.findAll(db));
             _tvTaskStatus.setText(R.string.menu_task_all);
         }else if(_task_flg == 0){
-            //cursor = DataAccess.findIncomplete(db);
             TaskList = createTaskList(DataAccess.findIncomplete(db));
             _tvTaskStatus.setText(R.string.menu_task_incomplete);
         }else if(_task_flg == 1){
-            //cursor = DataAccess.findComplete(db);
             TaskList = createTaskList(DataAccess.findComplete(db));
             _tvTaskStatus.setText(R.string.menu_task_complete);
         }
