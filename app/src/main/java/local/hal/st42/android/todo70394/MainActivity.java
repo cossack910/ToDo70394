@@ -2,6 +2,7 @@ package local.hal.st42.android.todo70394;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.content.Intent;
@@ -40,11 +41,16 @@ public class MainActivity extends AppCompatActivity {
      * _task_flg = 2の時は全タスク表示、_task_flg = 0の時は未完了タスク表示,_task_flg = 1の時は完了タスク表示
      */
     private int _task_flg = 2;
+    //
+    private static final String ToDo70394_NAME = "ToDo70394File";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //
+        SharedPreferences settings = getSharedPreferences(ToDo70394_NAME, MODE_PRIVATE);
+        _task_flg = settings.getInt(ToDo70394_NAME,_task_flg);
 
         _lvTaskList = findViewById(R.id.lvTaskList);
         _lvTaskList.setOnItemClickListener(new ListItemClickListener());
@@ -153,6 +159,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        SharedPreferences settings = getSharedPreferences(ToDo70394_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+
 
         int itemId = item.getItemId();
         SQLiteDatabase db = _helper.getWritableDatabase();
@@ -185,7 +194,8 @@ public class MainActivity extends AppCompatActivity {
                 _lvTaskList.setAdapter(adapter);
                 break;
         }
-
+        editor.putInt(ToDo70394_NAME,_task_flg);
+        editor.commit();
         return super.onOptionsItemSelected(item);
     }
 }
