@@ -16,6 +16,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.ArrayList;
 
@@ -102,6 +104,11 @@ public class MainActivity extends AppCompatActivity {
             strDeadline = cursor.getString(indexDeadline);
             //strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月").replace(" 00:00:00","日");
             strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月") + "日";
+            if (strDeadline.equals(getTodayMain())){
+                strDeadline = "期限: 今日";
+            }else{
+                strDeadline = "期限: " + strDeadline;
+            }
             intDone = cursor.getInt(indexDone);
             data.put("_id",strId);
             if(intDone == 1){
@@ -109,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
             }else {
                 data.put("name",strName);
             }
-
             data.put("deadline",strDeadline);
             TaskList.add(data);
         }
@@ -158,10 +164,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem _mnTaskStatus = menu.findItem(R.id.menuTaskStatus);
+        switch(_task_flg){
+            case 2:
+                _mnTaskStatus.setTitle(R.string.menu_task_all);
+                break;
+            case 0:
+                _mnTaskStatus.setTitle(R.string.menu_task_incomplete);
+                break;
+            case 1:
+                _mnTaskStatus.setTitle(R.string.menu_task_complete);
+                break;
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         SharedPreferences settings = getSharedPreferences(ToDo70394_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
-
 
         int itemId = item.getItemId();
         SQLiteDatabase db = _helper.getWritableDatabase();
@@ -194,8 +216,21 @@ public class MainActivity extends AppCompatActivity {
                 _lvTaskList.setAdapter(adapter);
                 break;
         }
+        //
+        invalidateOptionsMenu();
+
         editor.putInt(ToDo70394_NAME,_task_flg);
         editor.commit();
         return super.onOptionsItemSelected(item);
+
+    }
+
+    /*
+     *今日の日付取得
+     */
+    private String getTodayMain() {
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日");
+        return sdf.format(date);
     }
 }
