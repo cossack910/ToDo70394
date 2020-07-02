@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.content.Intent;
 import android.database.Cursor;
@@ -12,10 +13,15 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.MenuItem;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         _lvTaskList.setOnItemClickListener(new ListItemClickListener());
 
         _helper = new DatabaseHelper(getApplicationContext());
+
     }
 
     @Override
@@ -78,11 +85,50 @@ public class MainActivity extends AppCompatActivity {
             TaskList = createTaskList(DataAccess.findComplete(db));
             _tvTaskStatus.setText(R.string.menu_task_complete);
         }
+//        String[] from = {"name", "deadline"};
+//        int[] to = { android.R.id.text1, android.R.id.text2};
+//        SimpleAdapter adapter = new SimpleAdapter(this, TaskList,android.R.layout.simple_list_item_2, from, to);
+//        _lvTaskList.setAdapter(adapter);
+
+        //72
         String[] from = {"name", "deadline"};
-        int[] to = { android.R.id.text1, android.R.id.text2};
-        SimpleAdapter adapter = new SimpleAdapter(this, TaskList,android.R.layout.simple_list_item_2, from, to);
+        int[] to = {R.id.lvTaskName, R.id.lvDeadline};
+        SimpleAdapter adapter = new SimpleAdapter(this, TaskList,R.layout.row, from, to);
+        adapter.setViewBinder(new CustomViewBinder());
         _lvTaskList.setAdapter(adapter);
+
     }
+
+    private class CustomViewBinder implements SimpleAdapter.ViewBinder {
+        @Override
+        public boolean setViewValue(View view, Object data, String textRepresentation) {
+            int viewid = view.getId();
+            switch(viewid){
+                case R.id.lvDeadline:
+                    TextView _lvDeadline = (TextView) view;
+                    String strDeadline = (String) data;
+                    String _strDeadline = strDeadline.replaceFirst("-","").replaceFirst("-","");
+                    strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月") + "日";
+                    int intDeadline = Integer.parseInt(_strDeadline);
+                    int intToday = Integer.parseInt(getTodayMain());
+                    System.out.println(intDeadline);
+                    System.out.println(intToday);
+
+                    if(intDeadline == intToday){
+                        strDeadline = "期限: 今日";
+                        _lvDeadline.setTextColor(Color.RED);
+                    }else if(intDeadline >= intToday){
+                        _lvDeadline.setTextColor(Color.GREEN);
+                    }else if(intDeadline <= intToday){
+                        _lvDeadline.setTextColor(Color.BLUE);
+                    }
+                    _lvDeadline.setText(strDeadline);
+                    return true;
+            }
+            return false;
+        }
+    }
+
     /*
      *タスクリストを生成するメソッド
      * @return タスクリスト
@@ -103,12 +149,12 @@ public class MainActivity extends AppCompatActivity {
             strName = cursor.getString(indexName);
             strDeadline = cursor.getString(indexDeadline);
             //strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月").replace(" 00:00:00","日");
-            strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月") + "日";
-            if (strDeadline.equals(getTodayMain())){
-                strDeadline = "期限: 今日";
-            }else{
-                strDeadline = "期限: " + strDeadline;
-            }
+//            strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月") + "日";
+//            if (strDeadline.equals(getTodayMain())){
+//                strDeadline = "期限: 今日";
+//            }else{
+//                strDeadline = "期限: " + strDeadline;
+//            }
             intDone = cursor.getInt(indexDone);
             data.put("_id",strId);
             if(intDone == 1){
@@ -117,6 +163,8 @@ public class MainActivity extends AppCompatActivity {
                 data.put("name",strName);
             }
             data.put("deadline",strDeadline);
+            //72
+            //data.put("done",String.valueOf(intDone));
             TaskList.add(data);
         }
         return  TaskList;
@@ -191,28 +239,31 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<HashMap<String, String>> TaskList = new ArrayList<>();
         SimpleAdapter adapter;
         String[] from = {"name", "deadline"};
-        int[] to = { android.R.id.text1, android.R.id.text2};
+        int[] to = {R.id.lvTaskName, R.id.lvDeadline};
         TextView _tvTaskStatus = findViewById(R.id.tvTaskStatus);
         switch (itemId) {
             case R.id.menuTaskAll:
                 _tvTaskStatus.setText(R.string.menu_task_all);
                 _task_flg = 2;
                 TaskList = createTaskList(DataAccess.findAll(db));
-                adapter = new SimpleAdapter(this, TaskList,android.R.layout.simple_list_item_2, from, to);
+                adapter = new SimpleAdapter(this, TaskList,R.layout.row, from, to);
+                adapter.setViewBinder(new CustomViewBinder());
                 _lvTaskList.setAdapter(adapter);
                 break;
             case R.id.menuTaskIncomplete:
                 _tvTaskStatus.setText(R.string.menu_task_incomplete);
                 _task_flg = 0;
                 TaskList = createTaskList(DataAccess.findIncomplete(db));
-                adapter = new SimpleAdapter(this, TaskList,android.R.layout.simple_list_item_2, from, to);
+                adapter = new SimpleAdapter(this, TaskList,R.layout.row, from, to);
+                adapter.setViewBinder(new CustomViewBinder());
                 _lvTaskList.setAdapter(adapter);
                 break;
             case R.id.menuTaskComplete:
                 _tvTaskStatus.setText(R.string.menu_task_complete);
                 _task_flg = 1;
                 TaskList = createTaskList(DataAccess.findComplete(db));
-                adapter = new SimpleAdapter(this, TaskList,android.R.layout.simple_list_item_2, from, to);
+                adapter = new SimpleAdapter(this, TaskList,R.layout.row, from, to);
+                adapter.setViewBinder(new CustomViewBinder());
                 _lvTaskList.setAdapter(adapter);
                 break;
         }
@@ -230,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private String getTodayMain() {
         Date date = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         return sdf.format(date);
     }
 }

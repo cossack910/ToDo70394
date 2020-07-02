@@ -181,7 +181,7 @@ public class ToDoEditActivity extends AppCompatActivity {
         public void onDateSet(DatePicker view, int year, int month, int dayOfMonth){
             String strMonth;
             String strDayOfMonth;
-            if(month < 10){
+            if(month < 9){
                 strMonth = "0"+ String.valueOf(month + 1);
             }else{
                 strMonth = String.valueOf(month + 1);
