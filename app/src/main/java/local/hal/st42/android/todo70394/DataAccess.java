@@ -114,4 +114,17 @@ public class DataAccess {
         int result = stmt.executeUpdateDelete();
         return result;
     }
+
+    public static void changePhoneChecked(SQLiteDatabase db, long id, boolean isChecked) {
+        String sql = "UPDATE tasks SET done = ? WHERE _id = ?";
+        SQLiteStatement stmt = db.compileStatement(sql);
+        if(isChecked) {
+            stmt.bindLong(1, 1);
+        }
+        else {
+            stmt.bindLong(1, 0);
+        }
+        stmt.bindLong(2, id);
+        stmt.executeUpdateDelete();
+    }
 }

@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //
+
         SharedPreferences settings = getSharedPreferences(ToDo70394_NAME, MODE_PRIVATE);
         _task_flg = settings.getInt(ToDo70394_NAME,_task_flg);
 
@@ -71,104 +71,92 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         SQLiteDatabase db = _helper.getWritableDatabase();
-        ArrayList<HashMap<String, String>> TaskList = new ArrayList<>();
-        TaskList = createTaskList(DataAccess.findAll(db));
+        Cursor cursor;
         TextView _tvTaskStatus = findViewById(R.id.tvTaskStatus);
 
         if(_task_flg == 2){
-            TaskList = createTaskList(DataAccess.findAll(db));
+            //TaskList = createTaskList(DataAccess.findAll(db));
+            cursor = DataAccess.findAll(db);
             _tvTaskStatus.setText(R.string.menu_task_all);
         }else if(_task_flg == 0){
-            TaskList = createTaskList(DataAccess.findIncomplete(db));
+            //TaskList = createTaskList(DataAccess.findIncomplete(db));
+            cursor = DataAccess.findIncomplete(db);
             _tvTaskStatus.setText(R.string.menu_task_incomplete);
         }else if(_task_flg == 1){
-            TaskList = createTaskList(DataAccess.findComplete(db));
+            //TaskList = createTaskList(DataAccess.findComplete(db));
+            cursor = DataAccess.findComplete(db);
             _tvTaskStatus.setText(R.string.menu_task_complete);
         }
-//        String[] from = {"name", "deadline"};
-//        int[] to = { android.R.id.text1, android.R.id.text2};
-//        SimpleAdapter adapter = new SimpleAdapter(this, TaskList,android.R.layout.simple_list_item_2, from, to);
-//        _lvTaskList.setAdapter(adapter);
 
-        //72
-        String[] from = {"name", "deadline"};
-        int[] to = {R.id.lvTaskName, R.id.lvDeadline};
-        SimpleAdapter adapter = new SimpleAdapter(this, TaskList,R.layout.row, from, to);
+        String[] from = {"name", "deadline", "done"};
+        int[] to = {R.id.lvTaskName, R.id.lvDeadline, R.id.cbDoneCheck};
+        //SimpleAdapter adapter = new SimpleAdapter(this, TaskList, R.layout.row, from, to);
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.row, null, from, to, 0);
         adapter.setViewBinder(new CustomViewBinder());
         _lvTaskList.setAdapter(adapter);
+        setNewCursor(_task_flg);
 
     }
 
-    private class CustomViewBinder implements SimpleAdapter.ViewBinder {
+    private void setNewCursor(int _task_flg) {
+        SQLiteDatabase db = _helper.getWritableDatabase();
+        Cursor cursor = DataAccess.findAll(db);
+        if(_task_flg == 2){
+            cursor = DataAccess.findAll(db);
+        }else if(_task_flg == 0){
+            cursor = DataAccess.findIncomplete(db);
+        }else if(_task_flg == 1){
+            cursor = DataAccess.findComplete(db);
+        }
+
+        SimpleCursorAdapter adapter = (SimpleCursorAdapter) _lvTaskList.getAdapter();
+        adapter.changeCursor(cursor);
+    }
+
+    private class CustomViewBinder implements SimpleCursorAdapter.ViewBinder {
         @Override
-        public boolean setViewValue(View view, Object data, String textRepresentation) {
+        public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
             int viewid = view.getId();
             switch(viewid){
                 case R.id.lvDeadline:
-                    TextView _lvDeadline = (TextView) view;
-                    String strDeadline = (String) data;
+                    int idxDeadline = cursor.getColumnIndex("deadline");
+                    String strDeadline = cursor.getString(idxDeadline);
                     String _strDeadline = strDeadline.replaceFirst("-","").replaceFirst("-","");
                     strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月") + "日";
                     int intDeadline = Integer.parseInt(_strDeadline);
                     int intToday = Integer.parseInt(getTodayMain());
-                    System.out.println(intDeadline);
-                    System.out.println(intToday);
+
+                    TextView _lvDeadline = (TextView) view;
 
                     if(intDeadline == intToday){
                         strDeadline = "期限: 今日";
-                        _lvDeadline.setTextColor(Color.RED);
+                        _lvDeadline.setTextColor(Color.BLUE);
                     }else if(intDeadline >= intToday){
                         _lvDeadline.setTextColor(Color.GREEN);
                     }else if(intDeadline <= intToday){
-                        _lvDeadline.setTextColor(Color.BLUE);
+                        _lvDeadline.setTextColor(Color.RED);
                     }
                     _lvDeadline.setText(strDeadline);
+                    return true;
+                case R.id.cbDoneCheck:
+                    int idIdx = cursor.getColumnIndex("_id");
+                    long id = cursor.getLong(idIdx);
+                    CheckBox _cbDoneCheck = (CheckBox) view;
+                    int doneCheck = cursor.getInt(columnIndex);
+                    boolean checked = false;
+
+                    if(doneCheck == 1){
+                        checked = true;
+                    }
+                    _cbDoneCheck.setChecked(checked);
+                    _cbDoneCheck.setTag(id);
+                    _cbDoneCheck.setOnClickListener(new OnCheckBoxClickListener());
                     return true;
             }
             return false;
         }
     }
 
-    /*
-     *タスクリストを生成するメソッド
-     * @return タスクリスト
-     */
-    private ArrayList<HashMap<String, String>> createTaskList(Cursor cursor){
-        int indexId  = cursor.getColumnIndex( "_id");
-        int indexName = cursor.getColumnIndex( "name" );
-        int indexDeadline  = cursor.getColumnIndex( "deadline");
-        int indexDone  = cursor.getColumnIndex( "done");
-        String strId;
-        String strName;
-        String strDeadline;
-        int intDone;
-        ArrayList<HashMap<String, String>> TaskList = new ArrayList<>();
-        while(cursor.moveToNext()){
-            HashMap<String,String> data = new HashMap<>();
-            strId = cursor.getString(indexId);
-            strName = cursor.getString(indexName);
-            strDeadline = cursor.getString(indexDeadline);
-            //strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月").replace(" 00:00:00","日");
-//            strDeadline = strDeadline.replaceFirst("-","年").replaceFirst("-","月") + "日";
-//            if (strDeadline.equals(getTodayMain())){
-//                strDeadline = "期限: 今日";
-//            }else{
-//                strDeadline = "期限: " + strDeadline;
-//            }
-            intDone = cursor.getInt(indexDone);
-            data.put("_id",strId);
-            if(intDone == 1){
-                data.put("name",strName + "  (完了済のタスク)");
-            }else {
-                data.put("name",strName);
-            }
-            data.put("deadline",strDeadline);
-            //72
-            //data.put("done",String.valueOf(intDone));
-            TaskList.add(data);
-        }
-        return  TaskList;
-    }
 
     @Override
     protected void onDestroy() {
@@ -199,10 +187,9 @@ public class MainActivity extends AppCompatActivity {
     private class ListItemClickListener implements AdapterView.OnItemClickListener{
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id){
-            HashMap<String,String> item = (HashMap<String, String>) parent.getItemAtPosition(position);
-            System.out.println(item);
-            String idxId = item.get("_id");
-            Long idNo = Long.parseLong(idxId);
+            Cursor item = (Cursor) parent.getItemAtPosition(position);
+            int idxId = item.getColumnIndex("_id");
+            Long idNo = item.getLong(idxId);
 
             Intent intent = new Intent(getApplicationContext(), ToDoEditActivity.class);
             intent.putExtra("mode", MODE_EDIT);
@@ -237,36 +224,34 @@ public class MainActivity extends AppCompatActivity {
         SQLiteDatabase db = _helper.getWritableDatabase();
         Cursor cursor;
         ArrayList<HashMap<String, String>> TaskList = new ArrayList<>();
-        SimpleAdapter adapter;
-        String[] from = {"name", "deadline"};
-        int[] to = {R.id.lvTaskName, R.id.lvDeadline};
+        SimpleCursorAdapter adapter;
+        String[] from = {"name", "deadline", "done"};
+        int[] to = {R.id.lvTaskName, R.id.lvDeadline, R.id.cbDoneCheck};
         TextView _tvTaskStatus = findViewById(R.id.tvTaskStatus);
         switch (itemId) {
             case R.id.menuTaskAll:
                 _tvTaskStatus.setText(R.string.menu_task_all);
                 _task_flg = 2;
-                TaskList = createTaskList(DataAccess.findAll(db));
-                adapter = new SimpleAdapter(this, TaskList,R.layout.row, from, to);
+                adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.row, null, from, to, 0);
                 adapter.setViewBinder(new CustomViewBinder());
                 _lvTaskList.setAdapter(adapter);
                 break;
             case R.id.menuTaskIncomplete:
                 _tvTaskStatus.setText(R.string.menu_task_incomplete);
                 _task_flg = 0;
-                TaskList = createTaskList(DataAccess.findIncomplete(db));
-                adapter = new SimpleAdapter(this, TaskList,R.layout.row, from, to);
+                adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.row, null, from, to, 0);
                 adapter.setViewBinder(new CustomViewBinder());
                 _lvTaskList.setAdapter(adapter);
                 break;
             case R.id.menuTaskComplete:
                 _tvTaskStatus.setText(R.string.menu_task_complete);
                 _task_flg = 1;
-                TaskList = createTaskList(DataAccess.findComplete(db));
-                adapter = new SimpleAdapter(this, TaskList,R.layout.row, from, to);
+                adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.row, null, from, to, 0);
                 adapter.setViewBinder(new CustomViewBinder());
                 _lvTaskList.setAdapter(adapter);
                 break;
         }
+        setNewCursor(_task_flg);
         //
         invalidateOptionsMenu();
 
@@ -276,6 +261,17 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private class OnCheckBoxClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            CheckBox cbDoneCheck = (CheckBox) view;
+            boolean isChecked = cbDoneCheck.isChecked();
+            long id = (Long) cbDoneCheck.getTag();
+            SQLiteDatabase db = _helper.getWritableDatabase();
+            DataAccess.changePhoneChecked(db, id, isChecked);
+            setNewCursor(_task_flg);
+        }
+    }
     /*
      *今日の日付取得
      */
